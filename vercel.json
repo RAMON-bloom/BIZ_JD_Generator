@@ -3,7 +3,7 @@
   "buildCommand": "vite build",
   "outputDirectory": "dist",
   "functions": {
-    "api/analyze.ts": {
+    "api/extract.ts": {
       "maxDuration": 60
     }
   }

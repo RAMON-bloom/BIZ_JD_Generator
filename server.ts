@@ -2,7 +2,7 @@ import express from "express";
 import path from "path";
 import { fileURLToPath } from "url";
 import { createServer as createViteServer } from "vite";
-import { analyzeJobDescription } from "./services/geminiService";
+import { analyzeJobDescription } from "./services/extractionService";
 
 const _filename = typeof __filename !== "undefined" ? __filename : fileURLToPath(import.meta.url);
 const _dirname = typeof __dirname !== "undefined" ? __dirname : path.dirname(_filename);
@@ -14,20 +14,24 @@ async function startServer() {
   // Middleware to parse JSON request bodies
   app.use(express.json({ limit: "15mb" }));
 
-  // API Route for analyzing the job description
-  app.post("/api/analyze", async (req, res) => {
+  // API Route for extracting job information
+  app.post("/api/extract", async (req, res) => {
     try {
-      const { jobText, useSearch } = req.body;
+      const { jobText, fields, useSearch } = req.body;
       if (!jobText || typeof jobText !== "string" || !jobText.trim()) {
         res.status(400).json({ error: "求人情報テキストが入力されていません。" });
         return;
       }
-      
-      const { data, sources } = await analyzeJobDescription(jobText, useSearch);
+      if (!Array.isArray(fields) || fields.length === 0) {
+        res.status(400).json({ error: "抽出項目の設定が不正です。" });
+        return;
+      }
+
+      const { data, sources } = await analyzeJobDescription(jobText, fields, useSearch !== false);
       res.json({ data, sources });
     } catch (err: any) {
-      console.error("API error during job description analysis:", err);
-      res.status(500).json({ error: err.message || "求人情報の分析に失敗しました。" });
+      console.error("API error during job description extraction:", err);
+      res.status(500).json({ error: err.message || "求人情報の抽出に失敗しました。" });
     }
   });
 

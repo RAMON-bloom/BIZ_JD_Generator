@@ -5,6 +5,12 @@
   "functions": {
     "api/extract.ts": {
       "maxDuration": 60
+    },
+    "api/scout-message.ts": {
+      "maxDuration": 60
+    },
+    "api/scout-subjects.ts": {
+      "maxDuration": 30
     }
   }
 }

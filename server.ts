@@ -3,6 +3,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { createServer as createViteServer } from "vite";
 import { analyzeJobDescription } from "./services/extractionService";
+import { generateScoutMessage, generateScoutSubjects } from "./services/scoutService";
 
 const _filename = typeof __filename !== "undefined" ? __filename : fileURLToPath(import.meta.url);
 const _dirname = typeof __dirname !== "undefined" ? __dirname : path.dirname(_filename);
@@ -32,6 +33,45 @@ async function startServer() {
     } catch (err: any) {
       console.error("API error during job description extraction:", err);
       res.status(500).json({ error: err.message || "求人情報の抽出に失敗しました。" });
+    }
+  });
+
+  // API Route for generating a scout message
+  app.post("/api/scout-message", async (req, res) => {
+    try {
+      const { candidateExperience, candidateDesiredRole, jobInfo, fixedPhrases, promptSections, knowledge } = req.body;
+      if (!jobInfo || typeof jobInfo !== "string" || !jobInfo.trim()) {
+        res.status(400).json({ error: "求人情報が提供されていません。" });
+        return;
+      }
+      const sections = await generateScoutMessage(
+        candidateExperience || "",
+        candidateDesiredRole || "",
+        jobInfo,
+        fixedPhrases || [],
+        promptSections || [],
+        knowledge || { subjects: [], structures: [] }
+      );
+      res.json({ sections });
+    } catch (err: any) {
+      console.error("API error during scout message generation:", err);
+      res.status(500).json({ error: err.message || "スカウト本文の生成に失敗しました。" });
+    }
+  });
+
+  // API Route for generating scout subject lines
+  app.post("/api/scout-subjects", async (req, res) => {
+    try {
+      const { jobInfo, knowledge } = req.body;
+      if (!jobInfo || typeof jobInfo !== "string" || !jobInfo.trim()) {
+        res.status(400).json({ error: "求人情報が提供されていません。" });
+        return;
+      }
+      const subjectsData = await generateScoutSubjects(jobInfo, knowledge || { subjects: [], structures: [] });
+      res.json(subjectsData);
+    } catch (err: any) {
+      console.error("API error during scout subjects generation:", err);
+      res.status(500).json({ error: err.message || "件名の生成に失敗しました。" });
     }
   });
 

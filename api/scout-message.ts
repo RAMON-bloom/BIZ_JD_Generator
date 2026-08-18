@@ -1,0 +1,31 @@
+import { generateScoutMessage } from "../services/scoutService.js";
+
+export default async function handler(req: any, res: any) {
+  if (req.method !== "POST") {
+    res.status(405).json({ error: "Method Not Allowed" });
+    return;
+  }
+
+  try {
+    const { candidateExperience, candidateDesiredRole, jobInfo, fixedPhrases, promptSections, knowledge } = req.body ?? {};
+
+    if (!jobInfo || typeof jobInfo !== "string" || !jobInfo.trim()) {
+      res.status(400).json({ error: "求人情報が提供されていません。" });
+      return;
+    }
+
+    const sections = await generateScoutMessage(
+      candidateExperience || "",
+      candidateDesiredRole || "",
+      jobInfo,
+      fixedPhrases || [],
+      promptSections || [],
+      knowledge || { subjects: [], structures: [] }
+    );
+
+    res.status(200).json({ sections });
+  } catch (err: any) {
+    console.error("API error during scout message generation:", err);
+    res.status(500).json({ error: err.message || "スカウト本文の生成に失敗しました。" });
+  }
+}

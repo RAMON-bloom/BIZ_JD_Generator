@@ -1,0 +1,7 @@
+{
+  "name": "BIZ_JD_Generator",
+  "description": "An AI-powered Job Description generator.",
+  "requestFramePermissions": [],
+  "prompt": "",
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

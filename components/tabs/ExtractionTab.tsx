@@ -11,7 +11,11 @@ import ResultGroups from '../ResultGroups';
 import SettingsModal from '../SettingsModal';
 import PresetSwitcher from '../PresetSwitcher';
 
-const ExtractionTab: React.FC = () => {
+interface ExtractionTabProps {
+    idToken: string;
+}
+
+const ExtractionTab: React.FC<ExtractionTabProps> = ({ idToken }) => {
     const { activePreset, setActivePresetId, updateExtractionConfig } = usePresets();
     const preset = activePreset('extract');
     const { fields, groups } = preset.extraction;
@@ -71,7 +75,7 @@ const ExtractionTab: React.FC = () => {
         try {
             const response = await fetch('/api/extract', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
                 body: JSON.stringify({ jobText, fields, useSearch }),
             });
             if (!response.ok) {
@@ -86,7 +90,7 @@ const ExtractionTab: React.FC = () => {
         } finally {
             setIsLoading(false);
         }
-    }, [jobText, fields, useSearch]);
+    }, [jobText, fields, useSearch, idToken]);
 
     const handleClear = () => {
         setJobText('');

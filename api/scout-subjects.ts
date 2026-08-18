@@ -1,8 +1,21 @@
 import { generateScoutSubjects } from "../services/scoutService.js";
+import { verifyGoogleIdToken, extractBearerToken } from "../server/auth.js";
 
 export default async function handler(req: any, res: any) {
   if (req.method !== "POST") {
     res.status(405).json({ error: "Method Not Allowed" });
+    return;
+  }
+
+  const idToken = extractBearerToken(req.headers.authorization);
+  if (!idToken) {
+    res.status(401).json({ error: "ログインが必要です。" });
+    return;
+  }
+  try {
+    await verifyGoogleIdToken(idToken);
+  } catch (error: any) {
+    res.status(401).json({ error: error.message || "認証に失敗しました。再度ログインしてください。" });
     return;
   }
 

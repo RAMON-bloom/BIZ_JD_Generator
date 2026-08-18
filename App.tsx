@@ -5,11 +5,15 @@ import { PresetProvider } from './contexts/PresetContext';
 import ExtractionTab from './components/tabs/ExtractionTab';
 import ScoutTab from './components/tabs/ScoutTab';
 import DriveConnectButton from './components/DriveConnectButton';
+import GoogleLogin from './components/GoogleLogin';
+import { signOutGoogle, GoogleUser } from './services/googleAuthService';
 
 type ActiveTab = 'extract' | 'scout';
 
 const App: React.FC = () => {
     const [activeTab, setActiveTab] = useState<ActiveTab>('extract');
+    const [idToken, setIdToken] = useState<string | null>(null);
+    const [currentUser, setCurrentUser] = useState<GoogleUser | null>(null);
 
     const tabButtonClass = (tab: ActiveTab) =>
         `px-4 py-2 text-sm font-semibold rounded-lg transition-colors duration-200 ${
@@ -17,6 +21,21 @@ const App: React.FC = () => {
                 ? 'bg-white dark:bg-slate-800 text-cyan-600 dark:text-cyan-400 shadow-sm'
                 : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
         }`;
+
+    const handleLoginSuccess = (token: string, user: GoogleUser | null) => {
+        setIdToken(token);
+        setCurrentUser(user);
+    };
+
+    const handleSignOut = () => {
+        signOutGoogle();
+        setIdToken(null);
+        setCurrentUser(null);
+    };
+
+    if (!idToken) {
+        return <GoogleLogin onLoginSuccess={handleLoginSuccess} />;
+    }
 
     return (
         <PresetProvider>
@@ -38,6 +57,19 @@ const App: React.FC = () => {
                                     </button>
                                 </nav>
                                 <DriveConnectButton />
+                                <div className="flex items-center gap-2 pl-1">
+                                    {currentUser?.email && (
+                                        <span className="hidden md:inline text-xs text-slate-500 dark:text-slate-400 max-w-[10rem] truncate" title={currentUser.email}>
+                                            {currentUser.email}
+                                        </span>
+                                    )}
+                                    <button
+                                        onClick={handleSignOut}
+                                        className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-300 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                                    >
+                                        ログアウト
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -45,10 +77,10 @@ const App: React.FC = () => {
 
                 <main className="container mx-auto p-4 sm:p-6 lg:p-8">
                     <div style={{ display: activeTab === 'extract' ? 'block' : 'none' }}>
-                        <ExtractionTab />
+                        <ExtractionTab idToken={idToken} />
                     </div>
                     <div style={{ display: activeTab === 'scout' ? 'block' : 'none' }}>
-                        <ScoutTab />
+                        <ScoutTab idToken={idToken} />
                     </div>
                 </main>
             </div>

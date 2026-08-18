@@ -90,7 +90,11 @@ const reassembleGroupFromSections = (
     return parts.join('\n\n').trim();
 };
 
-const ScoutTab: React.FC = () => {
+interface ScoutTabProps {
+    idToken: string;
+}
+
+const ScoutTab: React.FC<ScoutTabProps> = ({ idToken }) => {
     const { activePreset, updateScoutConfig } = usePresets();
     const preset = activePreset('scout');
     const { promptSections, groups, fixedPhrases, knowledge } = preset.scout;
@@ -143,7 +147,7 @@ const ScoutTab: React.FC = () => {
         try {
             const msgResponse = await fetch('/api/scout-message', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
                 body: JSON.stringify({ candidateExperience, candidateDesiredRole, jobInfo, fixedPhrases, promptSections, knowledge }),
             });
             if (!msgResponse.ok) {
@@ -169,7 +173,7 @@ const ScoutTab: React.FC = () => {
                 await new Promise(resolve => setTimeout(resolve, 2000));
                 const subResponse = await fetch('/api/scout-subjects', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
                     body: JSON.stringify({ jobInfo, knowledge }),
                 });
                 if (!subResponse.ok) {
@@ -187,7 +191,7 @@ const ScoutTab: React.FC = () => {
         } finally {
             setIsLoading(false);
         }
-    }, [candidateExperience, candidateDesiredRole, jobInfo, fixedPhrases, promptSections, knowledge]);
+    }, [candidateExperience, candidateDesiredRole, jobInfo, fixedPhrases, promptSections, knowledge, idToken]);
 
     return (
         <div className="max-w-7xl mx-auto space-y-8">

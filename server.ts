@@ -4,6 +4,7 @@ import { fileURLToPath } from "url";
 import { createServer as createViteServer } from "vite";
 import { analyzeJobDescription } from "./services/extractionService";
 import { generateScoutMessage, generateScoutSubjects } from "./services/scoutService";
+import { verifyGoogleIdToken, extractBearerToken } from "./server/auth";
 
 const _filename = typeof __filename !== "undefined" ? __filename : fileURLToPath(import.meta.url);
 const _dirname = typeof __dirname !== "undefined" ? __dirname : path.dirname(_filename);
@@ -17,6 +18,18 @@ async function startServer() {
 
   // API Route for extracting job information
   app.post("/api/extract", async (req, res) => {
+    const idToken = extractBearerToken(req.headers.authorization);
+    if (!idToken) {
+      res.status(401).json({ error: "ログインが必要です。" });
+      return;
+    }
+    try {
+      await verifyGoogleIdToken(idToken);
+    } catch (error: any) {
+      res.status(401).json({ error: error.message || "認証に失敗しました。再度ログインしてください。" });
+      return;
+    }
+
     try {
       const { jobText, fields, useSearch } = req.body;
       if (!jobText || typeof jobText !== "string" || !jobText.trim()) {
@@ -38,6 +51,18 @@ async function startServer() {
 
   // API Route for generating a scout message
   app.post("/api/scout-message", async (req, res) => {
+    const idToken = extractBearerToken(req.headers.authorization);
+    if (!idToken) {
+      res.status(401).json({ error: "ログインが必要です。" });
+      return;
+    }
+    try {
+      await verifyGoogleIdToken(idToken);
+    } catch (error: any) {
+      res.status(401).json({ error: error.message || "認証に失敗しました。再度ログインしてください。" });
+      return;
+    }
+
     try {
       const { candidateExperience, candidateDesiredRole, jobInfo, fixedPhrases, promptSections, knowledge } = req.body;
       if (!jobInfo || typeof jobInfo !== "string" || !jobInfo.trim()) {
@@ -61,6 +86,18 @@ async function startServer() {
 
   // API Route for generating scout subject lines
   app.post("/api/scout-subjects", async (req, res) => {
+    const idToken = extractBearerToken(req.headers.authorization);
+    if (!idToken) {
+      res.status(401).json({ error: "ログインが必要です。" });
+      return;
+    }
+    try {
+      await verifyGoogleIdToken(idToken);
+    } catch (error: any) {
+      res.status(401).json({ error: error.message || "認証に失敗しました。再度ログインしてください。" });
+      return;
+    }
+
     try {
       const { jobInfo, knowledge } = req.body;
       if (!jobInfo || typeof jobInfo !== "string" || !jobInfo.trim()) {

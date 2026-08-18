@@ -39,6 +39,7 @@ interface PresetContextValue {
   deletePreset: (presetId: string) => void;
   updateExtractionConfig: (presetId: string, config: ExtractionConfig) => void;
   updateScoutConfig: (presetId: string, config: ScoutConfig) => void;
+  replaceDocument: (doc: AppSettingsDocument) => void;
 }
 
 const PresetContext = createContext<PresetContextValue | null>(null);
@@ -124,6 +125,10 @@ export const PresetProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }));
   }, []);
 
+  const replaceDocument = useCallback((doc: AppSettingsDocument) => {
+    setDocument(doc);
+  }, []);
+
   const value = useMemo<PresetContextValue>(() => ({
     document,
     presets: document.presets,
@@ -135,7 +140,8 @@ export const PresetProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     deletePreset,
     updateExtractionConfig,
     updateScoutConfig,
-  }), [document, activePreset, setActivePresetId, addPreset, duplicatePreset, renamePreset, deletePreset, updateExtractionConfig, updateScoutConfig]);
+    replaceDocument,
+  }), [document, activePreset, setActivePresetId, addPreset, duplicatePreset, renamePreset, deletePreset, updateExtractionConfig, updateScoutConfig, replaceDocument]);
 
   return <PresetContext.Provider value={value}>{children}</PresetContext.Provider>;
 };

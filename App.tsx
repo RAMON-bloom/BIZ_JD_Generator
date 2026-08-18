@@ -4,6 +4,7 @@ import SparklesIcon from './components/icons/SparklesIcon';
 import { PresetProvider } from './contexts/PresetContext';
 import ExtractionTab from './components/tabs/ExtractionTab';
 import ScoutTab from './components/tabs/ScoutTab';
+import DriveConnectButton from './components/DriveConnectButton';
 
 type ActiveTab = 'extract' | 'scout';
 
@@ -27,14 +28,17 @@ const App: React.FC = () => {
                                 <SparklesIcon className="w-7 h-7 text-cyan-500" />
                                 <h1 className="text-xl font-bold text-slate-800 dark:text-white">JD Scout Handler</h1>
                             </div>
-                            <nav className="flex items-center gap-1 bg-slate-200/70 dark:bg-slate-800/70 p-1 rounded-xl">
-                                <button className={tabButtonClass('extract')} onClick={() => setActiveTab('extract')}>
-                                    求人情報抽出
-                                </button>
-                                <button className={tabButtonClass('scout')} onClick={() => setActiveTab('scout')}>
-                                    スカウト生成
-                                </button>
-                            </nav>
+                            <div className="flex items-center gap-3">
+                                <nav className="flex items-center gap-1 bg-slate-200/70 dark:bg-slate-800/70 p-1 rounded-xl">
+                                    <button className={tabButtonClass('extract')} onClick={() => setActiveTab('extract')}>
+                                        求人情報抽出
+                                    </button>
+                                    <button className={tabButtonClass('scout')} onClick={() => setActiveTab('scout')}>
+                                        スカウト生成
+                                    </button>
+                                </nav>
+                                <DriveConnectButton />
+                            </div>
                         </div>
                     </div>
                 </header>

@@ -1,10 +1,11 @@
 
-import React, { useEffect, useState } from 'react';
-import { CopyGroup, FieldConfig } from '../types';
+import React, { useEffect, useMemo, useState } from 'react';
+import { AnalysisResult, CopyGroup, FieldConfig } from '../types';
 import ArrowUpIcon from './icons/ArrowUpIcon';
 import ArrowDownIcon from './icons/ArrowDownIcon';
 import TrashIcon from './icons/TrashIcon';
 import XCircleIcon from './icons/XCircleIcon';
+import ResultGroups from './ResultGroups';
 
 interface SettingsModalProps {
     isOpen: boolean;
@@ -12,11 +13,19 @@ interface SettingsModalProps {
     fields: FieldConfig[];
     groups: CopyGroup[];
     onSave: (fields: FieldConfig[], groups: CopyGroup[]) => void;
+    previewData?: AnalysisResult | null;
 }
 
 const genFieldId = () => `field_${Math.random().toString(36).slice(2, 10)}`;
 
-const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, fields, groups, onSave }) => {
+const buildSampleValue = (field: FieldConfig): string | string[] => {
+    if (field.type === 'array') {
+        return [1, 2, 3].map(n => `${field.label}のサンプル項目${n}`);
+    }
+    return `・${field.label}のサンプルテキストです\n・実際の抽出結果はこのように表示されます`;
+};
+
+const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, fields, groups, onSave, previewData }) => {
     const [activeTab, setActiveTab] = useState<'fields' | 'groups'>('fields');
     const [localFields, setLocalFields] = useState<FieldConfig[]>([]);
     const [localGroups, setLocalGroups] = useState<CopyGroup[]>([]);
@@ -28,6 +37,17 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, fields, 
             setActiveTab('fields');
         }
     }, [isOpen, fields, groups]);
+
+    const previewMergedData = useMemo<AnalysisResult>(() => {
+        const merged: AnalysisResult = {};
+        localFields.forEach(field => {
+            const realValue = previewData ? previewData[field.id] : undefined;
+            merged[field.id] = realValue !== undefined && realValue !== null && realValue !== ''
+                ? realValue
+                : buildSampleValue(field);
+        });
+        return merged;
+    }, [localFields, previewData]);
 
     if (!isOpen) return null;
 
@@ -96,7 +116,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, fields, 
 
     return (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={onClose}>
-            <div className="bg-white dark:bg-gray-950 shadow-2xl rounded-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden" onClick={e => e.stopPropagation()}>
+            <div className="bg-white dark:bg-gray-950 shadow-2xl rounded-2xl w-full max-w-6xl max-h-[90vh] flex flex-col overflow-hidden" onClick={e => e.stopPropagation()}>
                 <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800">
                     <div className="flex">
                         <button onClick={() => setActiveTab('fields')} className={`px-6 py-4 text-sm font-bold transition-colors ${activeTab === 'fields' ? 'text-cyan-600 dark:text-cyan-400 border-b-2 border-cyan-500' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900'}`}>抽出項目</button>
@@ -107,7 +127,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, fields, 
                     </button>
                 </div>
 
-                <div className="p-6 overflow-y-auto flex-1">
+                <div className="flex-1 overflow-hidden flex flex-col lg:flex-row min-h-0">
+                <div className="p-6 overflow-y-auto flex-1 lg:w-1/2 lg:border-r border-slate-200 dark:border-slate-800">
                     {activeTab === 'fields' ? (
                         <div className="space-y-4">
                             {localFields.map((field, index) => (
@@ -194,6 +215,17 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, fields, 
                             </button>
                         </div>
                     )}
+                </div>
+
+                <div className="p-6 overflow-y-auto flex-1 lg:w-1/2 bg-slate-50/50 dark:bg-slate-900/30">
+                    <div className="flex items-center justify-between mb-3">
+                        <h3 className="text-sm font-bold text-slate-600 dark:text-slate-300">プレビュー</h3>
+                        {!previewData && (
+                            <span className="text-xs text-slate-400 dark:text-slate-500">※サンプルテキストで表示中</span>
+                        )}
+                    </div>
+                    <ResultGroups fields={localFields} groups={localGroups} data={previewMergedData} />
+                </div>
                 </div>
 
                 <div className="p-6 pt-4 border-t border-slate-200 dark:border-slate-800 flex gap-4">

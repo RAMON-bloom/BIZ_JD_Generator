@@ -1,5 +1,5 @@
 {
-  "name": "BIZ_JD_Generator",
+  "name": "jd-scout-handler",
   "description": "An AI-powered Job Description generator.",
   "requestFramePermissions": [],
   "prompt": "",

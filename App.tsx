@@ -143,7 +143,7 @@ const App: React.FC = () => {
                     <div className="flex items-center justify-between h-16">
                         <div className="flex items-center space-x-3">
                              <SparklesIcon className="w-7 h-7 text-cyan-500" />
-                            <h1 className="text-xl font-bold text-slate-800 dark:text-white">BIZ JD Generator</h1>
+                            <h1 className="text-xl font-bold text-slate-800 dark:text-white">JD Scout Handler</h1>
                         </div>
                     </div>
                 </div>
